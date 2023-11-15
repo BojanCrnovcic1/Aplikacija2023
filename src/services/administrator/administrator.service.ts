@@ -28,7 +28,7 @@ export class AdministratorService {
             newAdmin.username = data.username;
             newAdmin.passwordHash = passwordHashString;
 
-            return this.administrator.save(newAdmin);
+            return this.administrator.save(newAdmin)
         }
 
         async editById(id: number, data: EditAdministratorDto): Promise<Administrator> {
@@ -40,6 +40,6 @@ export class AdministratorService {
 
             admin.passwordHash = passwordHashString;
 
-            return this.administrator.save(admin);
+            return this.administrator.save(admin)          
         }
 }
