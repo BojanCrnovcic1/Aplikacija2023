@@ -33,7 +33,7 @@ export class Article {
 
   @Column({type: "text" })
   description: string;
-
+  
   @Column({
     type: "enum", 
     enum: ["available", "visible", "hidden"],
