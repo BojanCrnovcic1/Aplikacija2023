@@ -27,6 +27,7 @@
     "@nestjsx/crud": "^4.4.2",
     "@nestjsx/crud-request": "^4.4.2",
     "@nestjsx/crud-typeorm": "^4.4.2",
+    "jsonwebtoken": "^9.0.0",
     "mysql": "^2.18.1",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.2.0",
