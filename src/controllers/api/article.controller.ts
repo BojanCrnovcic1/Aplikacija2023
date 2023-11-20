@@ -60,7 +60,7 @@ export class ArticleController {
     @UseInterceptors(
         FileInterceptor('photo', {
             storage: diskStorage({
-                destination: StorageConfig.photosDestination,
+                destination: StorageConfig.photo.destination,
                 filename: (req, file, callbeck) => {
 
                     let orginal: string = file.orginalname;
@@ -98,7 +98,7 @@ export class ArticleController {
             },
             limits: {
                 files: 1,
-                fileSize: StorageConfig.photoMaxFileSize
+                fileSize: StorageConfig.photo.maxSize
             }
         })
     )
@@ -124,8 +124,8 @@ export class ArticleController {
             return new ApiResponse('error', -4002, 'Bad type contant!')
         }
 
-        await this.createThumb(photo);
-        await this.createSamllImage(photo);
+        await this.createResizedImage(photo, StorageConfig.photo.risize.thumb);
+        await this.createResizedImage(photo, StorageConfig.photo.risize.small);
 
         const newPhoto: Photo = new Photo()
         newPhoto.articleId = articleId;
@@ -140,37 +140,19 @@ export class ArticleController {
         return savedPhoto;
     }
 
-    async createThumb(photo) {
+    async createResizedImage(photo, resizeSettings) {
         const orginalFilePath = photo.path;
         const fileName = photo.filename;
 
-        const destinationFilePath = StorageConfig.photosDestination + "thumb/" + fileName;
+        const destinationFilePath = StorageConfig.photo.destination +
+                                    resizeSettings.directory + fileName;
 
         await sharp(orginalFilePath)
-             .resize({
-                fit: 'cover',
-                width: StorageConfig.photoThumbSize.width,
-                height: StorageConfig.photoThumbSize.height,
-                background: { 
-                    r: 255, g: 255, b: 255, alpha: 0.0
-                }
-             })
-             .toFile(destinationFilePath);
-    }
-
-    async createSamllImage(photo) {
-        const orignalFilePath = photo.path;
-        const fileName = photo.filename;
-
-        const destinationFilePath = StorageConfig.photosDestination + "small/" + fileName;
-        
-        await sharp(orignalFilePath)
               .resize({
                 fit: 'cover',
-                width: StorageConfig.photoSmallSize.width,
-                height: StorageConfig.photoSmallSize.height,
+                width: resizeSettings.width,
+                height: resizeSettings.height,
               })
-              .toFile(destinationFilePath);
-
+              .toFile(destinationFilePath);                      
     }
 }
