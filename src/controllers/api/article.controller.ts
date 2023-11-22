@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Post, Req, UploadedFile, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Delete, Param, Patch, Post, Req, UploadedFile, UseInterceptors } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { Crud } from "@nestjsx/crud";
 import { Article } from "src/entities/article.entity";
@@ -12,6 +12,7 @@ import { ApiResponse } from "src/misc/api.response.class";
 import * as  fileType  from "file-type";
 import * as fs from "fs";
 import * as sharp from "sharp";
+import { EditArticleDto } from "src/dtos/article/edit.article.dto";
 
 @Controller('api/article')
 @Crud({
@@ -43,6 +44,9 @@ import * as sharp from "sharp";
                 eager: true
             }
         }
+    },
+    routes: {
+        exclude: ['updateOneBase', 'replaceOneBase', 'deleteOneBase']
     }
 })
 
@@ -55,6 +59,11 @@ export class ArticleController {
     @Post('createFull')
     createFullArticle(@Body() data: AddArticleDto) {
         return this.service.createFullArticle(data);
+    }
+
+    @Patch(':id')
+    editFullArticle(@Param('id') id: number,@Body() data: EditArticleDto) {
+        return this.service.editFullArticle(id,data);
     }
 
     @UseInterceptors(
@@ -154,5 +163,27 @@ export class ArticleController {
                 height: resizeSettings.height,
               })
               .toFile(destinationFilePath);                      
+    }
+    @Delete(':articleId/deletePhoto/:photoId')
+    public async deletePhoto(@Param('articleId') articleId: number, @Param('photoId') photoId: number) {
+        const photo = await this.photoService.findOne({where: {articleId, photoId}, withDeleted: true});
+
+        if (!photo) {
+            return new ApiResponse('error', -4004, 'Photo not found!')
+        }
+        try {
+        fs.unlinkSync(StorageConfig.photo.destination + photo.imagePath);
+        fs.unlinkSync(StorageConfig.photo.destination + StorageConfig.photo.risize.thumb.directory + photo.imagePath);
+        fs.unlinkSync(StorageConfig.photo.destination + StorageConfig.photo.risize.small.directory + photo.imagePath);
+        } 
+        catch (e) {}
+
+        const deleteResult = await this.photoService.deleteById(photoId);
+
+        if (deleteResult.affected === 0) {
+            return new ApiResponse('error', -4004, 'Photo not found!')
+        }
+        
+        return  new ApiResponse('ok', 0, 'One photo deleted!')
     }
 }

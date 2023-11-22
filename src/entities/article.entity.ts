@@ -42,7 +42,7 @@ export class Article {
   status: "available" | "visible" | "hidden";
 
   @Column({type: "tinyint",  name: "is_promoted", width: 1 })
-  isPromoted: boolean;
+  isPromoted: number;
 
   @Column({
     type: "timestamp",
