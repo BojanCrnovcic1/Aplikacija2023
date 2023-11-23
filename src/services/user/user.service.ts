@@ -40,4 +40,17 @@ async register(data: UserRegisterationDto): Promise <User | ApiResponse> {
         return new ApiResponse('error', -6001, 'Not created user.');
     }
 }
+
+getById(id: number): Promise<User> {
+    return this.user.findOne({where: {userId: id}});
+}
+
+async getByEmail(email: string): Promise<User | null> {
+    const user = await this.user.findOne({where: {email: email}});
+    
+    if(user) {
+        return user;
+    }
+    return null;
+}
 }
