@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Param, Patch, Post, Req, UploadedFile, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Delete, Param, Patch, Post, Req, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { Crud } from "@nestjsx/crud";
 import { Article } from "src/entities/article.entity";
@@ -13,6 +13,8 @@ import * as  fileType  from "file-type";
 import * as fs from "fs";
 import * as sharp from "sharp";
 import { EditArticleDto } from "src/dtos/article/edit.article.dto";
+import { AllowToRoles } from "src/misc/allow.to.roles.description";
+import { RoleCheckerGuard } from "src/misc/role.checker.guard";
 
 @Controller('api/article')
 @Crud({
@@ -46,7 +48,22 @@ import { EditArticleDto } from "src/dtos/article/edit.article.dto";
         }
     },
     routes: {
-        exclude: ['updateOneBase', 'replaceOneBase', 'deleteOneBase']
+        only: [
+            "getManyBase",
+            "getOneBase"
+        ],
+        getManyBase: {
+            decorators: [
+                UseGuards(RoleCheckerGuard),
+                AllowToRoles('administrator', 'user')
+            ]
+        },
+        getOneBase: {
+            decorators: [
+                UseGuards(RoleCheckerGuard),
+                AllowToRoles('administrator', 'user')
+            ]
+        }
     }
 })
 
@@ -57,15 +74,22 @@ export class ArticleController {
         ) {}
 
     @Post('createFull')
+    @AllowToRoles('administrator')
+    @UseGuards(RoleCheckerGuard)
     createFullArticle(@Body() data: AddArticleDto) {
         return this.service.createFullArticle(data);
     }
 
     @Patch(':id')
+    @AllowToRoles('administrator')
+    @UseGuards(RoleCheckerGuard)
     editFullArticle(@Param('id') id: number,@Body() data: EditArticleDto) {
         return this.service.editFullArticle(id,data);
     }
 
+    @Post(':id/uploadPhoto/')
+    @AllowToRoles('administrator')
+    @UseGuards(RoleCheckerGuard)
     @UseInterceptors(
         FileInterceptor('photo', {
             storage: diskStorage({
@@ -111,7 +135,7 @@ export class ArticleController {
             }
         })
     )
-    @Post(':id/uploadPhoto/')
+    
     async uploadPhoto(@Param('id') articleId: number, @UploadedFile() photo, @Req() req): Promise <ApiResponse | Photo> {
         if (req.fileFilterError) {
             return new ApiResponse('error',-4002, req.fileFilterError);
@@ -165,6 +189,8 @@ export class ArticleController {
               .toFile(destinationFilePath);                      
     }
     @Delete(':articleId/deletePhoto/:photoId')
+    @AllowToRoles('administrator')
+    @UseGuards(RoleCheckerGuard)
     public async deletePhoto(@Param('articleId') articleId: number, @Param('photoId') photoId: number) {
         const photo = await this.photoService.findOne({where: {articleId, photoId}, withDeleted: true});
 
