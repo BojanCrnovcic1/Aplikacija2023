@@ -27,6 +27,7 @@
     "@nestjsx/crud": "^4.4.2",
     "@nestjsx/crud-request": "^4.4.2",
     "@nestjsx/crud-typeorm": "^4.4.2",
+    "class-validator": "^0.14.0",
     "file-type": "^16.5.4",
     "jsonwebtoken": "^9.0.0",
     "mysql": "^2.18.1",
