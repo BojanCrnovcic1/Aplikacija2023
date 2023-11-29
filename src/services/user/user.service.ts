@@ -6,7 +6,7 @@ import { User } from "src/entities/user.entity";
 import { ApiResponse } from "src/misc/api.response.class";
 import { Repository } from "typeorm";
 import * as crypto from "crypto";
-import { UserToken } from "src/entities/user.token.entity";
+import { UserToken } from "src/entities/user-token.entity";
 
 @Injectable()
 export class UserService extends TypeOrmCrudService<User> {
