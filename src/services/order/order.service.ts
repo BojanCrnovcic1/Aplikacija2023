@@ -34,15 +34,33 @@ export class OrderService {
 
             const savedOrder = await this.order.save(newOrder);
 
-            return await this.order.findOne({where: {orderId: savedOrder.orderId},
-            relations: [ 
-                "cart",
-                "cart.user",
-                "cart.cartArticles",
-                "cart.cartArticles.article",
-                "cart.cartArticles.article.category",
-                "cart.cartArticles.article.category.articlePrices",
-            ],
-         });
+            return await this.getById(savedOrder.cartId);
      } 
+
+     async getById(orderId: number) {
+        return await this.order.findOne({where: {orderId: orderId},
+        relations:[
+            "cart",
+            "cart.user",
+            "cart.cartArticles",
+            "cart.cartArticles.article",
+            "cart.cartArticles.article.category",
+            "cart.cartArticles.article.category.articlePrices",
+        ]
+    });
+     }
+
+     async changeStatus(orderId: number, newStatus: "rejected" | "accepted" | "shipped" | "pedding") {
+        const order = await this.getById(orderId);
+
+        if (!order) {
+            return new ApiResponse('error', -9001, 'Order not found!')
+        }
+
+        order.status = newStatus;
+
+        await this.order.save(order);
+
+        return await this.getById(orderId);
+     }
   }
